@@ -9,7 +9,7 @@ export interface Customer {
   zip_code: string | null;
   customer_segment: string | null;
   loyalty_tier: string | null;
-  is_active: number;
+  is_active: boolean;
 }
 
 export interface Order {
@@ -22,14 +22,14 @@ export interface Order {
   payment_method: string;
   device_type: string;
   ip_country: string;
-  promo_used: number;
+  promo_used: boolean;
   promo_code: string | null;
   order_subtotal: number;
   shipping_fee: number;
   tax_amount: number;
   order_total: number;
   risk_score: number;
-  is_fraud: number;
+  is_fraud: boolean;
 }
 
 export interface Shipment {
@@ -41,7 +41,7 @@ export interface Shipment {
   distance_band: string;
   promised_days: number;
   actual_days: number;
-  late_delivery: number;
+  late_delivery: boolean;
   late_delivery_prob: number | null;
 }
 

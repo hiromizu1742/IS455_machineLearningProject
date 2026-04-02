@@ -1,6 +1,4 @@
 "use server";
-import { execSync } from "child_process";
-import path from "path";
 
 export async function runScoring(): Promise<{
   success: boolean;
@@ -32,16 +30,9 @@ export async function runScoring(): Promise<{
     }
   }
 
-  // Pattern 2: Fall back to local Python script if no API URL is configured
-  try {
-    execSync("python3 scoring_script.py", {
-      cwd: path.join(process.cwd()),
-      timeout: 120_000,
-      stdio: "pipe",
-    });
-    return { success: true, message: "Scoring complete (local script). Queue refreshed." };
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "Scoring script failed.";
-    return { success: false, message: msg };
-  }
+  return {
+    success: false,
+    message:
+      "ML_API_URL is not set. Configure your deployed scoring API URL in environment variables.",
+  };
 }

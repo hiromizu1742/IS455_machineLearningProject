@@ -40,7 +40,7 @@ export default async function PriorityQueuePage() {
 
       {/* Legend */}
       <div style={{ display: "flex", gap: "1rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
-        {legend.map(({ label, bg, color, dot }) => (
+        {legend.map(({ label, color, dot }) => (
           <div key={label} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
             <span style={{ width: 10, height: 10, borderRadius: "50%", background: dot, flexShrink: 0 }} />
             <span style={{ fontSize: "0.8rem", color, fontWeight: 500 }}>{label}</span>
