@@ -40,7 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# sqlite
-*.db
+# sqlite (wal/shm temp files only — shop.db is committed for Vercel deployment)
 *.db-shm
 *.db-wal
