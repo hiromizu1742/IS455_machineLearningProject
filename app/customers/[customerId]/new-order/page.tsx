@@ -52,7 +52,7 @@ export default function NewOrderPage() {
         payment_method: form.payment_method,
         device_type: form.device_type,
         ip_country: form.ip_country,
-        promo_used: Number(form.promo_used),
+        promo_used: form.promo_used === "1",
         promo_code: form.promo_code,
         order_subtotal: parseFloat(form.order_subtotal),
         shipping_fee: parseFloat(form.shipping_fee),

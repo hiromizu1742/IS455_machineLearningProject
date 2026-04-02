@@ -29,8 +29,8 @@ A customer order management and late delivery prediction dashboard backed by an 
 ### Database
 | Technology | Role |
 |------------|------|
-| **SQLite** (`shop.db`) | Local relational database |
-| **better-sqlite3** | Node.js SQLite driver (synchronous, fast) |
+| **Supabase Postgres** | Production relational database |
+| **`pg`** | Node.js PostgreSQL driver |
 
 ### ML Integration
 | Technology | Role |
@@ -48,7 +48,7 @@ A customer order management and late delivery prediction dashboard backed by an 
 | `next` | 16.x | Framework core |
 | `react` | 19.x | UI library |
 | `react-dom` | 19.x | Renders React to the DOM |
-| `better-sqlite3` | 12.x | Reads and writes SQLite from Node.js |
+| `pg` | latest | Reads and writes Postgres from Node.js |
 
 ### Development (`devDependencies`)
 
@@ -58,7 +58,7 @@ A customer order management and late delivery prediction dashboard backed by an 
 | `@types/node` | Type definitions for Node.js |
 | `@types/react` | Type definitions for React |
 | `@types/react-dom` | Type definitions for ReactDOM |
-| `@types/better-sqlite3` | Type definitions for better-sqlite3 |
+| `@types/pg` | Type definitions for pg |
 | `eslint` | Code linting tool |
 | `eslint-config-next` | Next.js ESLint rules |
 
@@ -88,10 +88,14 @@ shipments.late_delivery_prob  -- REAL, range 0.0–1.0 (predicted probability of
 # 1. Install dependencies
 npm install
 
-# 2. Start the dev server
+# 2. Add your Supabase Postgres URL
+# .env.local
+DATABASE_URL=postgresql://...
+
+# 3. Start the dev server
 npm run dev
 
-# 3. Open in browser
+# 4. Open in browser
 open http://localhost:3000
 ```
 
@@ -106,9 +110,9 @@ Press `Ctrl + C` to stop.
 ```
 [Browser]  Click "Run Scoring" button
      ↓
-[Next.js Server Action]  Calls external API or runs scoring_script.py
+[Next.js Server Action]  Calls external ML scoring API
      ↓
-[Python / API]  Writes late_delivery_prob to shipments table in shop.db
+[ML API]  Writes late_delivery_prob to shipments table in Supabase
      ↓
 [Browser]  Priority queue auto-refreshes
 ```
@@ -170,8 +174,34 @@ vercel --prod
 
 Submit the URL printed after deployment.
 
-> **Note:** Vercel's serverless environment does not persist SQLite writes between requests.
-> For full read/write support in production, deploy to **Fly.io** or **Railway** instead.
+> Add `DATABASE_URL` in Vercel Project Settings -> Environment Variables.
+
+---
+
+## Supabase Migration (for Vercel)
+
+If you want a persistent production database on Vercel, export `shop.db` to Postgres SQL and load it into Supabase.
+
+```bash
+# From project root
+npm run db:export:supabase
+```
+
+This generates:
+
+- `supabase/01_schema.sql` (tables and constraints)
+- `supabase/02_seed.sql` (data inserts)
+
+Load order in Supabase SQL Editor:
+
+1. Run `01_schema.sql`
+2. Run `02_seed.sql`
+
+You can also point to a different database or output folder:
+
+```bash
+python scripts/sqlite_to_supabase.py --db path/to/shop.db --out supabase
+```
 
 ---
 
@@ -197,10 +227,10 @@ IS455/
 ├── components/
 │   └── RunScoringButton.tsx              # Run Scoring button
 ├── lib/
-│   └── db.ts                             # SQLite connection singleton
+│   └── db.ts                             # Postgres connection singleton
 ├── types/
 │   └── index.ts                          # Shared TypeScript interfaces
-├── shop.db                               # SQLite database
+├── shop.db                               # Source SQLite data (migration input)
 └── scoring_script.py                     # Placeholder ML script
 ```
 
