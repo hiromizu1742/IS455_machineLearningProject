@@ -18,24 +18,31 @@ export default function RunScoringButton() {
   };
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.5rem" }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.4rem" }}>
       <button
         onClick={handleRun}
         disabled={loading}
         style={{
-          background: loading ? "#888" : "#c0392b",
+          background: loading ? "#94a3b8" : "#e53e3e",
           color: "white",
           border: "none",
           padding: "0.65rem 1.4rem",
-          borderRadius: "6px",
-          fontSize: "1rem",
+          borderRadius: "8px",
+          fontSize: "0.95rem",
+          fontWeight: 600,
           cursor: loading ? "not-allowed" : "pointer",
+          whiteSpace: "nowrap",
+          transition: "background 0.15s",
         }}
       >
-        {loading ? "Running ML Scoring..." : "Run Scoring"}
+        {loading ? "Running..." : "▶ Run Scoring"}
       </button>
       {result && (
-        <span style={{ color: result.ok ? "green" : "red", fontSize: "0.9rem" }}>
+        <span style={{
+          fontSize: "0.8rem",
+          fontWeight: 500,
+          color: result.ok ? "#16a34a" : "#e53e3e",
+        }}>
           {result.msg}
         </span>
       )}
