@@ -4,63 +4,54 @@ import { sql } from "@/lib/db";
 import { scoreOrder, type RawOrderRow } from "@/lib/fraudModel";
 
 // ---------------------------------------------------------------------------
-// Late-delivery scoring (calls external ML API)
+// Late-delivery scoring — heuristic model runs in TypeScript (no Python API)
 // ---------------------------------------------------------------------------
+
+type ShipmentRow = {
+  shipment_id: number;
+  carrier: string;
+  shipping_method: string;
+  distance_band: string;
+};
+
+function predictLateDelivery(row: ShipmentRow): number {
+  const base: Record<string, number> = { standard: 0.65, expedited: 0.35, overnight: 0.15 };
+  const dist: Record<string, number> = { national: 0.20, regional: 0.10, local: 0.0 };
+  const carrierAdj: Record<string, number> = { USPS: 0.05, UPS: 0.0, FedEx: -0.05 };
+
+  const prob =
+    (base[row.shipping_method] ?? 0.5) +
+    (dist[row.distance_band] ?? 0.0) +
+    (carrierAdj[row.carrier] ?? 0.0);
+
+  return Math.min(Math.max(prob, 0), 1);
+}
 
 export async function runScoring(): Promise<{
   success: boolean;
   message: string;
 }> {
-  const apiUrl = process.env.ML_API_URL;
-
-  if (apiUrl) {
-    try {
-      const res = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        return { success: false, message: `API error ${res.status}: ${text}` };
-      }
-
-      const data = await res.json().catch(() => ({}));
-      const count = data.count ?? data.scored ?? "unknown";
-      return { success: true, message: `Scoring complete via API. Scored: ${count}` };
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      return { success: false, message: `API call failed: ${msg}` };
-    }
-  }
-
   try {
-    const result = await sql<{ scored: number }>(
-      `WITH scoring AS (
-        UPDATE shipments
-        SET late_delivery_prob = CASE
-          WHEN shipping_method = 'overnight' AND distance_band = 'national' THEN
-            LEAST(1.0, 0.3 + (actual_days - promised_days) * 0.15 + RANDOM() * 0.05)
-          WHEN shipping_method = 'expedited' THEN
-            LEAST(1.0, 0.25 + (actual_days - promised_days) * 0.12 + RANDOM() * 0.05)
-          WHEN distance_band = 'national' THEN
-            LEAST(1.0, 0.5 + (actual_days - promised_days) * 0.1 + RANDOM() * 0.05)
-          WHEN distance_band = 'regional' THEN
-            LEAST(1.0, 0.4 + (actual_days - promised_days) * 0.1 + RANDOM() * 0.05)
-          ELSE
-            LEAST(1.0, 0.3 + (actual_days - promised_days) * 0.1 + RANDOM() * 0.05)
-        END
-        RETURNING 1
-      )
-      SELECT COUNT(*)::int AS scored FROM scoring`
+    const rows = await sql<ShipmentRow>(
+      `SELECT shipment_id, carrier, shipping_method, distance_band FROM shipments`
     );
 
-    const count = result[0]?.scored ?? 0;
-    return {
-      success: true,
-      message: `Scoring complete. Updated ${count} shipments.`,
-    };
+    const updates = rows.map(r => ({
+      id: r.shipment_id,
+      prob: predictLateDelivery(r),
+    }));
+
+    const payload = JSON.stringify(updates.map(u => ({ id: u.id, prob: u.prob })));
+
+    await sql(
+      `UPDATE shipments s
+       SET late_delivery_prob = (v->>'prob')::float8
+       FROM jsonb_array_elements($1::jsonb) AS v
+       WHERE s.shipment_id = (v->>'id')::bigint`,
+      [payload]
+    );
+
+    return { success: true, message: `Scored ${updates.length} shipments.` };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     return { success: false, message: `Scoring failed: ${msg}` };

@@ -2,6 +2,10 @@ import { Pool, types } from "pg";
 
 types.setTypeParser(20, (value) => Number(value));
 types.setTypeParser(1700, (value) => Number(value));
+// Return timestamps as ISO strings (not Date objects) so .slice(0,10) works
+types.setTypeParser(1082, (value) => value);          // date
+types.setTypeParser(1114, (value) => value);          // timestamp
+types.setTypeParser(1184, (value) => value);          // timestamptz
 
 const globalForDb = globalThis as typeof globalThis & {
   pgPool?: Pool;
