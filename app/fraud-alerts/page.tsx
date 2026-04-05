@@ -134,7 +134,7 @@ export default async function FraudAlertsPage() {
                         {row.full_name}
                       </Link>
                     </td>
-                    <td style={{ ...td, color: "#64748b" }}>{row.order_datetime.slice(0, 10)}</td>
+                    <td style={{ ...td, color: "#64748b" }}>{String(row.order_datetime).slice(0, 10)}</td>
                     <td style={{ ...td, textAlign: "right", color: "#475569", fontWeight: 500 }}>
                       ${row.order_total.toFixed(2)}
                     </td>

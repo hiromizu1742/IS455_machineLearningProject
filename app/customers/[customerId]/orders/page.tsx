@@ -66,7 +66,7 @@ export default async function OrderHistoryPage({
             <tbody>
               {orders.map((o) => (
                 <tr key={o.order_id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                  <td style={td}>{o.order_datetime.slice(0, 10)}</td>
+                  <td style={td}>{String(o.order_datetime).slice(0, 10)}</td>
                   <td style={td}>{o.payment_method}</td>
                   <td style={td}>{o.device_type}</td>
                   <td style={td}>

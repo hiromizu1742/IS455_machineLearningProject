@@ -97,7 +97,7 @@ export default async function PriorityQueuePage() {
                         {row.full_name}
                       </Link>
                     </td>
-                    <td style={{ ...td, color: "#64748b" }}>{row.order_datetime.slice(0, 10)}</td>
+                    <td style={{ ...td, color: "#64748b" }}>{String(row.order_datetime).slice(0, 10)}</td>
                     <td style={{ ...td, color: "#64748b" }}>{row.carrier}</td>
                     <td style={{ ...td, color: "#64748b" }}>{row.shipping_method}</td>
                     <td style={{ ...td, textAlign: "center", color: "#64748b" }}>{row.promised_days}d</td>
