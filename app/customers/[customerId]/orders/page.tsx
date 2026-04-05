@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getOrdersByCustomer } from "@/actions/orders";
 import { getCustomerById } from "@/actions/customers";
 import Link from "next/link";

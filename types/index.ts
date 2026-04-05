@@ -65,3 +65,17 @@ export interface CustomerSummary {
   avg_order_total: number;
   promo_orders: number;
 }
+
+export interface FraudAlertsRow {
+  order_id: number;
+  order_datetime: string;
+  order_total: number;
+  payment_method: string;
+  device_type: string;
+  ip_country: string;
+  promo_used: boolean;
+  risk_score: number;
+  is_fraud: boolean;
+  customer_id: number;
+  full_name: string;
+}

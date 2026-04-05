@@ -3,8 +3,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const links = [
-  { href: "/customers", label: "Customers" },
+  { href: "/customers",     label: "Customers" },
   { href: "/priority-queue", label: "Priority Queue" },
+  { href: "/fraud-alerts",  label: "Fraud Alerts" },
 ];
 
 export default function NavLinks() {

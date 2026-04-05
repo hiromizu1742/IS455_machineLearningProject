@@ -1,6 +1,6 @@
 "use server";
 import { sql, sqlOne } from "@/lib/db";
-import { Order, PriorityQueueRow } from "@/types";
+import { FraudAlertsRow, Order, PriorityQueueRow } from "@/types";
 
 export async function getOrdersByCustomer(customerId: number): Promise<Order[]> {
   return sql<Order>(
@@ -62,6 +62,21 @@ export async function createOrder(data: {
   }
 
   return { order_id: inserted.order_id };
+}
+
+export async function getFraudAlerts(): Promise<FraudAlertsRow[]> {
+  return sql<FraudAlertsRow>(
+    `SELECT
+       o.order_id, o.order_datetime, o.order_total,
+       o.payment_method, o.device_type, o.ip_country,
+       o.promo_used, o.risk_score, o.is_fraud,
+       o.customer_id, c.full_name
+     FROM orders o
+     JOIN customers c ON o.customer_id = c.customer_id
+     WHERE o.risk_score > 0
+     ORDER BY o.risk_score DESC
+     LIMIT 50`
+  );
 }
 
 export async function getPriorityQueue(): Promise<PriorityQueueRow[]> {

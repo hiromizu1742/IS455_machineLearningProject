@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getPriorityQueue } from "@/actions/orders";
 import RunScoringButton from "@/components/RunScoringButton";
 import Link from "next/link";
